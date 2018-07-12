@@ -9,6 +9,10 @@ No other functions yet...
 
 ![Beaconizer Screenshot](doc/beaconizer-screenshot.jpg)
 
+## Bugs
+
+Currently multiple MAC addresses are visible. This probably means that advertising is started multiple times. Probably: implement onStop() somewhere...
+
 ## Disclaimer
 
 Do **not use** in production. 
