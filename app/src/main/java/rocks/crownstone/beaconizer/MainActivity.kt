@@ -11,6 +11,7 @@ import android.app.Notification
 import android.bluetooth.le.*
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.ParcelUuid
 import android.support.v4.app.NotificationCompat
 import android.support.v7.widget.LinearLayoutManager
@@ -100,8 +101,13 @@ class MainActivity : AppCompatActivity() {
         // Start service
         Log.d("MainActivity", "startService")
         val intent = Intent(this, CrownstoneService::class.java)
-        startService(intent)
-//        startForegroundService(intent) // Requires api level 26
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            startForegroundService(intent)
+        }
+        else {
+            startService(intent)
+        }
 
 
 //        val advSettings = AdvertiseSettings.Builder().setAdvertiseMode(this.advFrequency!!).

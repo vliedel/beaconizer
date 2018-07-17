@@ -1,5 +1,8 @@
 package rocks.crownstone.beaconizer
 
+import android.app.ActivityManager
+import android.app.Notification
+import android.app.PendingIntent
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -11,6 +14,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.IBinder
 import android.os.ParcelUuid
 import android.support.v4.app.NotificationCompat
@@ -48,6 +52,7 @@ class CrownstoneService: Service() {
         runInForeground()
         startAdvertising()
         return START_STICKY
+//        return START_REDELIVER_INTENT
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -68,15 +73,29 @@ class CrownstoneService: Service() {
         val notificationId = 13
         val notificationChannelId = "13"
         val icon = BitmapFactory.decodeResource(resources, R.drawable.ic_launcher_background)
+
+        val intent = Intent(this, MainActivity::class.java)
+        intent.setAction(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
         val notification = NotificationCompat.Builder(this, notificationChannelId)
                 .setSmallIcon(R.drawable.notification)
                 .setContentTitle("beaconizer")
-                .setContentText("running")
+//                .setContentText("running")
+                .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build()
 
+        if (Build.VERSION.SDK_INT >= 21) {
+            notification.visibility = Notification.VISIBILITY_PUBLIC
+        }
+
         startForeground(notificationId, notification)
+        checkForeground()
     }
 
     fun startAdvertising() {
@@ -105,5 +124,16 @@ class CrownstoneService: Service() {
         }
 
         bleAdvertiser.startAdvertising(advSettings, advData, advCallback)
+    }
+
+    fun checkForeground() {
+        val am = this.getSystemService(android.content.Context.ACTIVITY_SERVICE) as ActivityManager
+        val l = am.getRunningServices(50)
+        val i = l.iterator()
+        while (i.hasNext()) {
+            val info = i.next() as ActivityManager.RunningServiceInfo
+            Log.i(TAG, "${info.service.className}")
+            Log.i(TAG, "${info.foreground}")
+        }
     }
 }
