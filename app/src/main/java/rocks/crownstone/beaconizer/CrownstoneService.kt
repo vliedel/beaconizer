@@ -82,7 +82,7 @@ class CrownstoneService: Service() {
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val notification = NotificationCompat.Builder(this, notificationChannelId)
-                .setSmallIcon(R.drawable.notification)
+                .setSmallIcon(R.drawable.icon_notification)
                 .setContentTitle("beaconizer")
 //                .setContentText("running")
                 .setContentIntent(pendingIntent)
@@ -127,6 +127,7 @@ class CrownstoneService: Service() {
     }
 
     fun checkForeground() {
+        // taken from https://stackoverflow.com/questions/6452466/how-to-determine-if-an-android-service-is-running-in-the-foreground
         val am = this.getSystemService(android.content.Context.ACTIVITY_SERVICE) as ActivityManager
         val l = am.getRunningServices(50)
         val i = l.iterator()
