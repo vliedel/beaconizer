@@ -138,13 +138,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
-            REQUEST_FINE_LOCATION -> when (grantResults) {
-                intArrayOf(PackageManager.PERMISSION_GRANTED) -> {
-                    Log.d("MainActivity", "onRequestPermissionsResult(PERMISSION_GRANTED)")
+            REQUEST_FINE_LOCATION -> {
+                if (grantResults.contains(PackageManager.PERMISSION_GRANTED)) {
+                    Log.d("MainActivity", "onRequestPermissionsResult PERMISSION_GRANTED")
                     bleScanner.startScan(crownstoneScanner)
                 }
-                else -> {
-                    Log.d("MainActivity", "onRequestPermissionsResult(not PERMISSION_GRANTED)")
+                else {
+                    Log.d("MainActivity", "onRequestPermissionsResult PERMISSION_DENIED")
                 }
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
