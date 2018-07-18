@@ -1,9 +1,6 @@
 package rocks.crownstone.beaconizer
 
-import android.app.ActivityManager
-import android.app.Notification
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.AdvertiseCallback
@@ -17,6 +14,7 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
 import android.os.ParcelUuid
+import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 
@@ -51,8 +49,8 @@ class CrownstoneService: Service() {
 //        Log.w(TAG, "Don't use start, bind to service instead")
         runInForeground()
         startAdvertising()
-        return START_STICKY
-//        return START_REDELIVER_INTENT
+//        return START_STICKY
+        return START_REDELIVER_INTENT
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -71,8 +69,10 @@ class CrownstoneService: Service() {
     fun runInForeground() {
         Log.d(TAG, "runInForeground")
         val notificationId = 13
-        val notificationChannelId = "13"
+        val notificationChannelId = "channel_id"
         val icon = BitmapFactory.decodeResource(resources, R.drawable.ic_launcher_background)
+
+
 
         val intent = Intent(this, MainActivity::class.java)
         intent.setAction(Intent.ACTION_MAIN)
@@ -81,18 +81,33 @@ class CrownstoneService: Service() {
 
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
+        val notificationBuilder : NotificationCompat.Builder
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            // Create the notification channel, must be done before posting any notification.
+            // It's safe to call this repeatedly because creating an existing notification channel performs no operation.
+            val name = "human readable channel name"
+            val description = "channel description"
+//            val importance = android.app.NotificationManager.IMPORTANCE_NONE
+            val importance = android.app.NotificationManager.IMPORTANCE_MIN
+//            val importance = android.app.NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel(notificationChannelId, name, importance)
+            channel.description = description
+
+            // Register the channel with the system; you can't change the importance or other notification behaviors after this
+            val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
         val notification = NotificationCompat.Builder(this, notificationChannelId)
                 .setSmallIcon(R.drawable.icon_notification)
                 .setContentTitle("beaconizer")
-//                .setContentText("running")
+                .setContentText("body text")
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .build()
-
-        if (Build.VERSION.SDK_INT >= 21) {
-            notification.visibility = Notification.VISIBILITY_PUBLIC
-        }
 
         startForeground(notificationId, notification)
         checkForeground()
